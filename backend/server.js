@@ -1,43 +1,110 @@
 const http = require('http');
-const server = http.createServer((req, res) => {
+const { Pool } = require('pg');
+const { parse } = require('querystring');
+
+const connectionString = 'postgresql://retool:tCb2eGQMaf7d@ep-fragrant-resonance-31213228.us-west-2.retooldb.com/retool?sslmode=require'
+
+const pool = new Pool({
+    connectionString,
+})
+
+const server = http.createServer(async (req, res) => {
 
     // GET Method
     if (req.method === 'GET') {
         if (req.url === '/duties') {
-            const duties = [
-                { id: 1, name: 'Duty 1' },
-                { id: 2, name: 'Duty 2' },
-                { id: 3, name: 'Duty 3' },
-            ];
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(duties));
+            pool.connect(function (err, client, done) {
+                if (err) {
+                    // Error Handling
+                }
+                client.query("SELECT * FROM DUTIES", function (err, result) {
+                    done();
+                    if (err) {
+                        // Error Handling
+                    }
+                    sendResponse(res, 200, result.rows)
+                });
+            });
         }
     }
 
     // POST Method
     if (req.method === 'POST') {
         if (req.url === '/duty') {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Feedback submitted successfully');
+            let body = '';
+            req.on('data', (chunk) => {
+                body += chunk.toString();
+            });
+            req.on('end', () => {
+                const duty = JSON.parse(body);
+
+                pool.connect(function (err, client, done) {
+                    if (err) {
+                        // Error Handling
+                    }
+                    client.query("INSERT INTO DUTIES (name) VALUES ($1)", [duty['name']], function (err, result) {
+                        done();
+                        if (err) {
+                            // Error Handling
+                        }
+                        sendResponse(res, 200, 'Duty created successfully')
+                    });
+                });
+            });
         }
     }
 
     // PUT Method
     if (req.method === 'PUT') {
-        if (req.url === '/duty') {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Product updated successfully');
+        if (req.url.startsWith('/duty/')) {
+            const dutyId = parseInt(req.url.split('/')[2]);
+
+            if (isNaN(dutyId)) {
+                return sendResponse(res, 400, 'Invalid duty ID');
+            }
+
+            let body = '';
+
+            req.on('data', (chunk) => {
+                body += chunk;
+            });
+
+            req.on('end', () => {
+                const dutyToUpdate = JSON.parse(body);
+
+                pool.connect(function (err, client, done) {
+                    if (err) {
+                        // Error Handling
+                    }
+                    client.query("UPDATE DUTIES SET NAME = $1 WHERE ID = $2", [dutyToUpdate['name'], dutyId], function (err, result) {
+                        done()
+                        if (err) {
+                            // Error Handling
+                        }
+                        sendResponse(res, 200, 'Duty updated successfully')
+                    });
+                });
+            });
         }
     }
 
     // DELETE Method
     if (req.method === 'DELETE') {
-        if (req.url === '/duty') {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Product deleted successfully');
+        if (req.url.startsWith('/duty/')) {
+            const dutyId = parseInt(req.url.split('/')[2]);
+            sendResponse(res, 200, 'Product deleted successfully')
         }
     }
+
+    // Default
+    sendResponse(res, 404, 'API route not found');
 });
+
+function sendResponse(res, statusCode, body) {
+    res.statusCode = statusCode;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(body));
+}
 
 const PORT = process.env.PORT || 3000;
 
