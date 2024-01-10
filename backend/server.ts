@@ -15,12 +15,12 @@ const server = http.createServer(async (req, res) => {
         if (req.url === '/duties') {
             pool.connect(function (err, client, done) {
                 if (err) {
-                    // Error Handling
+                    handleUnexpectedError(res, err);
                 }
                 client.query("SELECT * FROM DUTIES", function (err, result) {
                     done();
                     if (err) {
-                        // Error Handling
+                        handleUnexpectedError(res, err);
                     }
                     sendResponse(res, 200, result.rows)
                 });
@@ -29,7 +29,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // POST Method
-    if (req.method === 'POST') {
+    else if (req.method === 'POST') {
         if (req.url === '/duty') {
             let body = '';
             req.on('data', (chunk) => {
@@ -40,12 +40,12 @@ const server = http.createServer(async (req, res) => {
 
                 pool.connect(function (err, client, done) {
                     if (err) {
-                        // Error Handling
+                        handleUnexpectedError(res, err);
                     }
-                    client.query("INSERT INTO DUTIES (name) VALUES ($1)", [duty['name']], function (err, result) {
+                    client.query("INSERT INTO DUTIES (name) VALUES ($1)", [duty['name']], function (err) {
                         done();
                         if (err) {
-                            // Error Handling
+                            handleUnexpectedError(res, err);
                         }
                         sendResponse(res, 200, 'Duty created successfully')
                     });
@@ -55,7 +55,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // PUT Method
-    if (req.method === 'PUT') {
+    else if (req.method === 'PUT') {
         if (req.url.startsWith('/duty/')) {
             const dutyId = parseInt(req.url.split('/')[2]);
 
@@ -74,12 +74,12 @@ const server = http.createServer(async (req, res) => {
 
                 pool.connect(function (err, client, done) {
                     if (err) {
-                        // Error Handling
+                        handleUnexpectedError(res, err)
                     }
-                    client.query("UPDATE DUTIES SET NAME = $1 WHERE ID = $2", [dutyToUpdate['name'], dutyId], function (err, result) {
+                    client.query("UPDATE DUTIES SET NAME = $1 WHERE ID = $2", [dutyToUpdate['name'], dutyId], function (err) {
                         done()
                         if (err) {
-                            // Error Handling
+                            handleUnexpectedError(res, err)
                         }
                         sendResponse(res, 200, 'Duty updated successfully')
                     });
@@ -89,21 +89,44 @@ const server = http.createServer(async (req, res) => {
     }
 
     // DELETE Method
-    if (req.method === 'DELETE') {
+    else if (req.method === 'DELETE') {
         if (req.url.startsWith('/duty/')) {
             const dutyId = parseInt(req.url.split('/')[2]);
-            sendResponse(res, 200, 'Product deleted successfully')
+
+            if (isNaN(dutyId)) {
+                return sendResponse(res, 400, 'Invalid duty ID');
+            }
+            pool.connect(function (err, client, done) {
+                if (err) {
+                    handleUnexpectedError(res, err);
+                }
+                client.query("DELETE FROM DUTIES WHERE ID = $1", [dutyId], function (err) {
+                    done();
+                    if (err) {
+                        handleUnexpectedError(res, err);
+                    }
+                    console.log('marxo')
+                    sendResponse(res, 200, 'Duty deleted successfully')
+                });
+            });
         }
     }
 
     // Default
-    sendResponse(res, 404, 'API route not found');
+    else {
+        sendResponse(res, 404, 'API route not found');
+    }
 });
 
 function sendResponse(res, statusCode, body) {
     res.statusCode = statusCode;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(body));
+}
+
+function handleUnexpectedError(res, err) {
+    console.log(err);
+    sendResponse(res, 500, 'Unexpect error occur. Please check with System Administrator');
 }
 
 const PORT = process.env.PORT || 3000;
