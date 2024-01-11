@@ -2,6 +2,16 @@ import { server } from '../src/server';
 import request from 'supertest';
 
 describe('API Tests', () => {
+
+    beforeAll(done => {
+        done()
+    })
+
+    afterAll(done => {
+        server.close();
+        done()
+    })
+
     it('should return 404 for unknown API route in GET Method', async () => {
         const response = await request(server).get('/unknown-route');
 
@@ -35,13 +45,67 @@ describe('API Tests', () => {
         expect(response.status).toBe(200);
     }, 10000);
 
-    it('should return 401 for empty request body in POST request', async () => {
+    it('should return 401 for empty request body in creating duty', async () => {
         const response = await request(server)
             .post('/duty')
             .send({}); // Empty request body
 
         expect(response.status).toBe(401);
         expect(response.body).toBe('Please input "name" in request body');
+    });
+
+
+    it('should return 401 for empty request body in updating duty', async () => {
+        const response = await request(server)
+            .put('/duty/0')
+            .send({}); // Empty request body
+
+        expect(response.status).toBe(401);
+        expect(response.body).toBe('Please input "name" in request body');
+    });
+
+    it('should return 401 for invalid id in updating duty', async () => {
+        const response = await request(server)
+            .put('/duty/impossible-id')
+            .send({
+                name: "example-name"
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toBe('Invalid duty ID');
+    });
+
+    it('should return 401 for empty path id in updating duty', async () => {
+        const response = await request(server)
+            .put('/duty/')
+            .send({
+                name: "impossible-name"
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toBe('Invalid duty ID');
+    });
+
+    it('should return 401 for invalid id in deleting duty', async () => {
+        const response = await request(server)
+            .delete('/duty/impossible-id')
+            .send({
+                name: "example-name"
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toBe('Invalid duty ID');
+    });
+
+    it('should return 401 for empty path id in deleting duty', async () => {
+        const response = await request(server)
+            .delete('/duty/')
+            .send({
+                name: "impossible-name"
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toBe('Invalid duty ID');
     });
 
 });
