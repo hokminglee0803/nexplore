@@ -10,6 +10,8 @@ const { Title, Paragraph, Text } = Typography;
 
 function Duties() {
 
+  const API_PATH = process.env.REACT_APP_API_URL;
+
   const [duties, setDuties] = useState<DutyProps[]>([]);
 
   const [init, setInit] = useState<boolean>(true);
@@ -20,7 +22,7 @@ function Duties() {
 
   const handleFormSubmit = (name: string) => {
     triggerLoading();
-    return fetch("http://localhost:3001/duty",
+    return fetch(`${API_PATH}/duty`,
       {
         method: 'POST',
         body: JSON.stringify({
@@ -39,7 +41,7 @@ function Duties() {
 
   const handleUpdateDuty = (id: string, name: string) => {
     triggerLoading();
-    fetch(`http://localhost:3001/duty/${id}`,
+    fetch(`${API_PATH}/duty/${id}`,
       {
         method: 'PUT',
         body: JSON.stringify({
@@ -56,7 +58,7 @@ function Duties() {
 
   const handleDeleteDuty = (id: string) => {
     triggerLoading();
-    fetch(`http://localhost:3001/duty/${id}`,
+    fetch(`${API_PATH}/duty/${id}`,
       {
         method: 'DELETE',
       },).then(() => {
@@ -71,7 +73,7 @@ function Duties() {
   useEffect(() => {
     if (init) {
       triggerLoading();
-      fetch("http://localhost:3001/duties",
+      fetch(`${API_PATH}/duties`,
         {
           method: 'GET'
         }).then(response => {

@@ -131,3 +131,4 @@ dist
 
 # backend build folder
 build
+frontend/.env.production

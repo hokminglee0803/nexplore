@@ -5,7 +5,7 @@ An end-to-end web application that allows the user to read, create and update a 
 
 ## Demo
 
-[Please have a try](https://react-antd-todo.netlify.com/)
+[Please have a try and you can get more during the demo.](https://warm-cliffs-97714-3860849fb908.herokuapp.com/)
 
 ## Installation Guide
 
@@ -48,13 +48,18 @@ Move to the frontend
 $ cd frontend/
 ```
 
+Create .env.production and paste your api url:
+
+```sh
+REACT_APP_API_URL=http://localhost:3001
+```
+
 Build and start the backend:
 
 ```sh
 $ npm install
 $ npm run build
-$ npm install -g serve
-$ serve -s build
+$ npm run start
 ```
 
 ### License
