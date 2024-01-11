@@ -4,12 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "tsx watch --tsconfig ./tsconfig.json ./server.ts",
+    "prod":"npx tsc --outDir build && node ./build/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "keywords": [],
+  "author": "Marco Lee",
   "license": "MIT",
   "dependencies": {
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9",
+    "tsx": "^4.7.0"
   }
 }

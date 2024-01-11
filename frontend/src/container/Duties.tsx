@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './../logo.svg';
 import './Duties.css';
-import { Card, Col, Row } from 'antd';
+import { Card, Col, Row, Typography } from 'antd';
+import { CreateDutyForm } from '../components/CreateDutyForm';
+import { DutyList } from '../components/DutyList';
+import { DutyProps } from '../interface/Duty';
+const { Title, Paragraph } = Typography;
 
 function Duties() {
+
+  const [duties, setDuties] = useState<DutyProps[]>([]);
+
+  useEffect(() => {
+  })
+
   return (
     <Row
       justify="center"
@@ -18,10 +28,12 @@ function Duties() {
         lg={{ span: 20 }}
         xl={{ span: 18 }}
       >
-        {/* <PageHeader
-          title="Add Todo"
-          subTitle="To add a todo, just fill the form below and click in add todo."
-        /> */}
+        <Typography>
+          <Title>Duties</Title>
+          <Paragraph>
+            You can Add, Update, Delete your duties in this application.
+          </Paragraph>
+        </Typography>
       </Col>
 
       <Col
@@ -31,8 +43,8 @@ function Duties() {
         lg={{ span: 20 }}
         xl={{ span: 18 }}
       >
-        <Card title="Create a new todo">
-          {/* <AddTodoForm onFormSubmit={handleFormSubmit} /> */}
+        <Card title="Create a Duty">
+          <CreateDutyForm />
         </Card>
       </Col>
 
@@ -43,12 +55,8 @@ function Duties() {
         lg={{ span: 20 }}
         xl={{ span: 18 }}
       >
-        <Card title="Todo List">
-          {/* <TodoList
-            todos={todos}
-            onTodoRemoval={handleRemoveTodo}
-            onTodoToggle={handleToggleTodoStatus}
-          /> */}
+        <Card title="Duites List">
+          <DutyList />
         </Card>
       </Col>
     </Row>
