@@ -1,7 +1,7 @@
 # Duty List Web Application
 An end-to-end web application that allows the user to read, create and update a to-do list of duties of any kind.
 
-![Application Sample](https://i.imgur.com/a/sn8Sx3X)
+![Application Sample](https://i.imgur.com/sbq9j4T.png)
 
 ## Demo
 
