@@ -1,12 +1,14 @@
 import React from 'react';
 import { List, Button, Popconfirm, Typography } from 'antd';
 import { DutyProps } from '../../interface/Duty';
-
+const { Paragraph } = Typography;
 interface DutyItemProps {
-    duty: DutyProps
+    duty: DutyProps;
+    handleUpdateDuty: (id: string, name: string) => void;
+    handleDeleteDuty: (id: string) => void;
 }
 
-export const DutyItem: React.FC<DutyItemProps> = ({ duty }) => {
+export const DutyItem: React.FC<DutyItemProps> = ({ duty, handleUpdateDuty, handleDeleteDuty }) => {
     return (
         <List.Item
             key={duty.id}
@@ -14,7 +16,7 @@ export const DutyItem: React.FC<DutyItemProps> = ({ duty }) => {
                 <Popconfirm
                     title="Are you sure you want to delete?"
                     onConfirm={() => {
-                        // Delete Task
+                        handleDeleteDuty(duty.id)
                     }}
                 >
                     <Button type="primary" danger>
@@ -23,9 +25,7 @@ export const DutyItem: React.FC<DutyItemProps> = ({ duty }) => {
                 </Popconfirm>,
             ]}
         >
-            <Typography.Title editable level={5} style={{ margin: 0 }}>
-                {duty.name}
-            </Typography.Title>
-        </List.Item>
+            <Paragraph editable={{ onChange: (value) => handleUpdateDuty(duty.id, value) }}>{duty.name}</Paragraph>
+        </List.Item >
     );
 };

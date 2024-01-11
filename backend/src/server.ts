@@ -9,6 +9,18 @@ const pool = new Pool({
 
 export const server = http.createServer(async (req, res) => {
 
+    // Handle CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
     // GET Method
     if (req.method === 'GET') {
         if (req.url === '/duties') {
@@ -22,6 +34,7 @@ export const server = http.createServer(async (req, res) => {
                         if (err) {
                             handleUnexpectedError(res, err);
                         }
+                        console.log('Query Result :', result.rows)
                         sendResponse(res, 200, result.rows)
                     });
                 } else {
@@ -44,22 +57,27 @@ export const server = http.createServer(async (req, res) => {
             req.on('end', () => {
                 const duty = JSON.parse(body);
 
-                pool.connect(function (err, client, done) {
-                    if (err) {
-                        handleUnexpectedError(res, err);
-                    } else if (client) {
-                        client.query("INSERT INTO DUTIES (name) VALUES ($1)", [duty['name']], function (err) {
+                if (isNaN(duty['name'])) {
+                    sendResponse(res, 401, 'Please input "name" in request body');
+                } else {
+                    pool.connect(function (err, client, done) {
+                        if (err) {
+                            handleUnexpectedError(res, err);
+                        } else if (client) {
+                            client.query("INSERT INTO DUTIES (name) VALUES ($1)", [duty['name']], function (err) {
+                                done();
+                                if (err) {
+                                    handleUnexpectedError(res, err);
+                                }
+                                console.log(`Duty ${duty['name']} created`)
+                                sendResponse(res, 200, 'Duty created successfully')
+                            });
+                        } else {
                             done();
-                            if (err) {
-                                handleUnexpectedError(res, err);
-                            }
-                            sendResponse(res, 200, 'Duty created successfully')
-                        });
-                    } else {
-                        done();
-                        handleUnexpectedError(res, "Client is undefined");
-                    }
-                });
+                            handleUnexpectedError(res, "Client is undefined");
+                        }
+                    });
+                }
             });
         } else {
             sendResponse(res, 404, 'API route not found');
@@ -84,22 +102,27 @@ export const server = http.createServer(async (req, res) => {
             req.on('end', () => {
                 const dutyToUpdate = JSON.parse(body);
 
-                pool.connect(function (err, client, done) {
-                    if (err) {
-                        handleUnexpectedError(res, err)
-                    } else if (client) {
-                        client.query("UPDATE DUTIES SET NAME = $1 WHERE ID = $2", [dutyToUpdate['name'], dutyId], function (err) {
-                            done()
-                            if (err) {
-                                handleUnexpectedError(res, err)
-                            }
-                            sendResponse(res, 200, 'Duty updated successfully')
-                        });
-                    } else {
-                        done();
-                        handleUnexpectedError(res, "Client is undefined");
-                    }
-                });
+                if (dutyToUpdate['name']) {
+                    sendResponse(res, 401, 'Please input "name" in request body');
+                } else {
+                    pool.connect(function (err, client, done) {
+                        if (err) {
+                            handleUnexpectedError(res, err)
+                        } else if (client) {
+                            client.query("UPDATE DUTIES SET NAME = $1 WHERE ID = $2", [dutyToUpdate['name'], dutyId], function (err) {
+                                done()
+                                if (err) {
+                                    handleUnexpectedError(res, err)
+                                }
+                                console.log(`Duty ${dutyId} is updated to ${dutyToUpdate['name']}`)
+                                sendResponse(res, 200, 'Duty updated successfully')
+                            });
+                        } else {
+                            done();
+                            handleUnexpectedError(res, "Client is undefined");
+                        }
+                    });
+                }
             });
         } else {
             sendResponse(res, 404, 'API route not found');
@@ -123,7 +146,7 @@ export const server = http.createServer(async (req, res) => {
                         if (err) {
                             handleUnexpectedError(res, err);
                         }
-                        console.log('marxo')
+                        console.log(`Duty ${dutyId} is deleted`)
                         sendResponse(res, 200, 'Duty deleted successfully')
                     });
                 } else {

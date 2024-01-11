@@ -1,12 +1,20 @@
 import React from 'react';
 import { Form, Row, Col, Button, Input } from 'antd';
 
+interface CreateDutyFormProps {
+  handleFormSubmit: (name: string) => Promise<boolean>;
+}
 
-export const CreateDutyForm: React.FC = () => {
+export const CreateDutyForm: React.FC<CreateDutyFormProps> = ({ handleFormSubmit }) => {
   const [form] = Form.useForm();
 
   const onFinish = () => {
-    form.resetFields();
+    handleFormSubmit(form.getFieldValue('name')).then(success => {
+      // Only reset value when submit successfully
+      if (success) {
+        form.resetFields();
+      }
+    })
   };
 
   return (
