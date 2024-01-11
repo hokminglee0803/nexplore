@@ -7,7 +7,7 @@ const pool = new Pool({
     connectionString,
 })
 
-const server = http.createServer(async (req, res) => {
+export const server = http.createServer(async (req, res) => {
 
     // GET Method
     if (req.method === 'GET') {
